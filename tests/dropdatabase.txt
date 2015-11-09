@@ -1,0 +1,1 @@
+DROP DATABASE `hotel_ex1`;
