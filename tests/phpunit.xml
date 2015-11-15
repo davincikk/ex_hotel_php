@@ -1,0 +1,8 @@
+<phpunit>
+  <testsuites>
+    <testsuite name="All">
+      <file>DBConnectionTest.php</file>
+      <file>RoomTypeTest.php</file>
+    </testsuite>
+  </testsuites>
+</phpunit>

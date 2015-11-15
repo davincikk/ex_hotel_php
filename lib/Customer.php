@@ -1,7 +1,7 @@
 <?php
 require_once "DBConnection.php";
 
-Class RoomType
+Class Customer
 {
     public $dbObj = null;
     public $error = null;
@@ -17,45 +17,48 @@ Class RoomType
         }
     } 
 
-    public function createRoomType($valArray)
+    public function createCustomer($valArray)
     {
+        $this->error = null;
         try {
-            $crtSt = $this->dbObj->db->prepare("INSERT INTO `room_type`(room_type_name, 
-                capacity, features, status, price) VALUES (:room_type_name, :capacity, 
-                :features, :status, :price)");
+            $crtSt = $this->dbObj->db->prepare("INSERT INTO `customer`(name, 
+                email, phone, address1, address2) VALUES (:name, :email, 
+                :phone, :address1, :address2)");
             if($crtSt) {
                 $crtStExe = $crtSt->execute([
-                    ':room_type_name' => $valArray['room_type_name'],
-                    ':capacity'       => $valArray['capacity'],
-                    ':features'       => $valArray['features'],
-                    ':status'         => $valArray['status'],
-                    ':price'          => $valArray['price']
+                    ':name'     => $valArray['name'],
+                    ':email'    => $valArray['email'],
+                    ':phone'    => $valArray['phone'],
+                    ':address1' => $valArray['address1'],
+                    ':address2' => $valArray['address2']
                 ]);
                 if(!$crtStExe) {
+                    $this->error = "Unable to create record";
                     return FALSE;
                 }
             }
             return TRUE;
         } catch (Exception $e) {
-            $this->error = "Unable to create record";
+            $this->error = "Unable to create record, not enough records";
             return FALSE;
         }
     }
 
-    public function updateRoomType($updArray, $room_type_id)
+    public function updateCustomer($updArray, $cust_id)
     {
-       try {
-            if((is_array($updArray) && count($updArray)>0) && $room_type_id > 0) {
+        $this->error = null;
+        try {
+            if((is_array($updArray) && count($updArray)>0) && $cust_id > 0) {
                 $setArr   = array();
                 $setList  = array();
                 foreach($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
                     $setList[] = "`" . $key . "` = :" . $key ;
                 }
-                $setArr[':room_type_id'] = $room_type_id;
+                $setArr[':cust_id'] = $cust_id;
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `room_type` SET " .
-                    $setList . " WHERE room_type_id = :room_type_id");
+                $updSt = $this->dbObj->db->prepare("UPDATE `customer` SET " .
+                    $setList . " WHERE cust_id = :cust_id");
                 if($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
@@ -74,21 +77,10 @@ Class RoomType
         } 
     }
 
-    public function getAllRoomType()
+    public function getAllCustomer()
     {
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type`");
-        if($selSt) {
-            $selStExe = $selSt->execute();
-        }
-        if($selStExe) {
-            $resSel = $selSt->fetchAll();
-            return $resSel;
-        }
-    }
-    
-    public function getAllActiveRoomType()
-    {
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` WHERE status = 'Active'");
+        $this->error = null;
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `customer`");
         if($selSt) {
             $selStExe = $selSt->execute();
         }
@@ -98,11 +90,11 @@ Class RoomType
         }
     }
 
-
-    public function getRoomTypeById($typeId)
+    public function getCustomerById($custId)
     {
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` WHERE room_type_id = :room_type_id");
-        $setArr[":room_type_id"] = $typeId;
+        $this->error = null;
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `customer` WHERE cust_id = :cust_id");
+        $setArr[":cust_id"] = $custId;
         if($selSt) {
             $selStExe = $selSt->execute($setArr);
         }

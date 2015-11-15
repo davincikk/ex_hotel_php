@@ -1,7 +1,7 @@
 <?php
 require_once "DBConnection.php";
 
-Class Rooms
+Class Booking
 {
     public $dbObj = null;
     public $error = null;
@@ -17,45 +17,54 @@ Class Rooms
         }
     } 
 
-    public function createRoom($valArray)
+    public function createBooking($valArray)
     {
         $this->error = null;
         try {
-            $crtSt = $this->dbObj->db->prepare("INSERT INTO `rooms`(room_name, 
-                room_type_id, status) VALUES (:room_name, :room_type_id, 
-                :status)");
+            $isAvailable = $this->checkAvailability($valArray['room_id'],
+                            $valArray['from_date'], $valArray['to_date']);
+            if(!$isAvailable) {
+                $this->error = "Room Not Available";
+                return FALSE;
+            }
+            $crtSt = $this->dbObj->db->prepare("INSERT INTO `booking`(room_id, 
+                from_date, to_date, cust_id, status) VALUES (:room_id, :from_date, 
+                :to_date, :cust_id, :status)");
             if($crtSt) {
                 $crtStExe = $crtSt->execute([
-                    ':room_name' => $valArray['room_name'],
-                    ':room_type_id'       => $valArray['room_type_id'],
-                    ':status'         => $valArray['status']
+                    ':room_id'      => $valArray['room_id'],
+                    ':from_date'    => $valArray['from_date'],
+                    ':to_date'      => $valArray['to_date'],
+                    ':cust_id'      => $valArray['cust_id'],
+                    ':status'       => $valArray['status']
                 ]);
                 if(!$crtStExe) {
+                    $this->error = "Unable to create record";
                     return FALSE;
                 }
             }
             return TRUE;
         } catch (Exception $e) {
-            $this->error = "Unable to create record";
+            $this->error = "Unable to create record, not enough records";
             return FALSE;
         }
     }
 
-    public function updateRoom($updArray, $room_id)
+    public function updateBooking($updArray, $booking_id)
     {
         $this->error = null;
         try {
-            if((is_array($updArray) && count($updArray)>0) && $room_id > 0) {
+            if((is_array($updArray) && count($updArray)>0) && $booking_id > 0) {
                 $setArr   = array();
                 $setList  = array();
                 foreach($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
                     $setList[] = "`" . $key . "` = :" . $key ;
                 }
-                $setArr[':room_id'] = $room_id;
+                $setArr[':booking_id'] = $booking_id;
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `rooms` SET " .
-                    $setList . " WHERE room_id = :room_id");
+                $updSt = $this->dbObj->db->prepare("UPDATE `booking` SET " .
+                    $setList . " WHERE booking_id = :booking_id");
                 if($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
@@ -74,10 +83,10 @@ Class Rooms
         } 
     }
 
-    public function getAllRooms()
+    public function getAllBookings()
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms`");
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking`");
         if($selSt) {
             $selStExe = $selSt->execute();
         }
@@ -87,10 +96,10 @@ Class Rooms
         }
     }
 
-    public function getAllRoomsByStatus($status)
+    public function getAllBookingsByStatus($status)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE status = :status");
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE status = :status");
         $setArr[":status"] = $status;
         if($selSt) {
             $selStExe = $selSt->execute($setArr);
@@ -106,18 +115,18 @@ Class Rooms
         }
     }
     
-    public function getAllRoomsByType($typeId)
+    public function getAllBookingsByCustomer($custId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE room_type_id = :room_type_id");
-        $setArr[":room_type_id"] = $typeId;
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE cust_id = :cust_id");
+        $setArr[":cust_id"] = $custId;
         if($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
         if($selStExe) {
             $resSel = $selSt->fetchAll();
             if(count($resSel) == 0 ) {
-                $this->error = "No record matching the type";
+                $this->error = "No record matching the Customer";
                 return FALSE;
             } else {
                 return $resSel;
@@ -125,11 +134,11 @@ Class Rooms
         }
     }
 
-    public function getRoomById($roomId)
+    public function getBookingById($bookingId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE room_id = :room_id");
-        $setArr[":room_id"] = $roomId;
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE booking_id = :booking_id");
+        $setArr[":booking_id"] = $bookingId;
         if($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
@@ -140,6 +149,26 @@ Class Rooms
                 return FALSE;
             } else {
                 return $resSel;
+            }
+        }
+    }
+
+    public function checkAvailability($roomId, $from, $to)
+    {
+        $this->error = null;
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE room_id = :room_id and from_date < :to_date and to_date > :from_date");
+        $setArr[":room_id"] = $roomId;
+        $setArr[":from_date"] = $from;
+        $setArr[":to_date"] = $to;
+        if($selSt) {
+            $selStExe = $selSt->execute($setArr);
+        }
+        if($selStExe) {
+            $resSel = $selSt->fetchAll();
+            if(count($resSel) == 0 ) {
+                return TRUE;
+            } else {
+                return FALSE;
             }
         }
     }

@@ -15,6 +15,9 @@ class RoomsTest extends PHPUnit_Framework_TestCase
                         'room_type_id' => 3), TRUE),
             array(array('room_name' => 'Suite 3',
                         'status' => 'Cleaning',
+                        'room_type_id' => 6), FALSE),
+            array(array('room_name' => 'Suite 3',
+                        'statu' => 'Cleaning',
                         'room_type_id' => 6), FALSE)
         );
     } 
@@ -25,11 +28,35 @@ class RoomsTest extends PHPUnit_Framework_TestCase
             array('room_id' => 1, array('room_name' => 'Suite 4'), 
                         array(TRUE, NULL)),
             array('room_id' => 1, array(), 
-                        array(FALSE, 'Not Enough data to update record')),
+                        array(FALSE, 'No Data to update')),
             array('room_id' => '', array(), 
                         array(FALSE, 'No Data to update')),
             array('room_id' => 1, array('room_nae' => 'Class C'), 
                         array(FALSE, 'Update Failed'))
+        );
+    }
+
+    public function getRoomId()
+    {
+        return array(
+                array(1, ""),
+                array(4, "No matching record")
+        );
+    }
+
+    public function getRoomStatus()
+    {
+        return array(
+                array("Occupied", ""),
+                array("InActive", "No record matching the status")
+        );
+    }
+
+    public function getRoomType()
+    {
+        return array(
+                array(1, ""),
+                array(4, "No record matching the type")
         );
     }
 
@@ -55,5 +82,42 @@ class RoomsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($tempObj->error, $expected[1]);
     }
    
+    public function testgetAllRoom()
+    {
+        $tempObj = new Rooms();
+        $selectStatus = $tempObj->getAllRooms();
+        $this->assertEquals(count($selectStatus), 2);
+    }
+
+    /**
+     * @dataProvider getRoomId
+     */
+    public function testgetRoomById($id, $expected)
+    {
+        $tempObj = new Rooms();
+        $selectStatus = $tempObj->getRoomById($id);
+        $this->assertEquals($tempObj->error, $expected);
+    }
+
+    /**
+     * @dataProvider getRoomStatus
+     */
+    public function testgetRoomsByStatus($id, $expected)
+    {
+        $tempObj = new Rooms();
+        $selectStatus = $tempObj->getAllRoomsByStatus($id);
+        $this->assertEquals($tempObj->error, $expected);
+    }
+
+    /**
+     * @dataProvider getRoomType
+     */
+    public function testgetRoomsByType($id, $expected)
+    {
+        $tempObj = new Rooms();
+        $selectStatus = $tempObj->getAllRoomsByType($id);
+        $this->assertEquals($tempObj->error, $expected);
+    }
+
 }
 ?>
