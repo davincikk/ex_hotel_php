@@ -8,11 +8,11 @@ Class Rooms
 
     public function __construct()
     {
-        if(is_null($this->dbObj)) {
+        if (is_null($this->dbObj)) {
             $this->dbObj = new DBConnection();
-            if(is_null($this->dbObj->db)) {
+            if (is_null($this->dbObj->db)) {
                 $this->error = "DB Connection Failed";
-                return FALSE;
+                return false;
             }
         }
     } 
@@ -24,20 +24,20 @@ Class Rooms
             $crtSt = $this->dbObj->db->prepare("INSERT INTO `rooms`(room_name, 
                 room_type_id, status) VALUES (:room_name, :room_type_id, 
                 :status)");
-            if($crtSt) {
+            if ($crtSt) {
                 $crtStExe = $crtSt->execute([
                     ':room_name' => $valArray['room_name'],
                     ':room_type_id'       => $valArray['room_type_id'],
                     ':status'         => $valArray['status']
                 ]);
-                if(!$crtStExe) {
-                    return FALSE;
+                if (!$crtStExe) {
+                    return false;
                 }
             }
-            return TRUE;
+            return true;
         } catch (Exception $e) {
             $this->error = "Unable to create record";
-            return FALSE;
+            return false;
         }
     }
 
@@ -45,43 +45,45 @@ Class Rooms
     {
         $this->error = null;
         try {
-            if((is_array($updArray) && count($updArray)>0) && $room_id > 0) {
-                $setArr   = array();
-                $setList  = array();
-                foreach($updArray as $key => $value) {
+            if ((is_array($updArray) && count($updArray)>0) && $room_id > 0) {
+                $setArr  = array();
+                $setList = array();
+                foreach ($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
-                    $setList[] = "`" . $key . "` = :" . $key ;
+                    $setList[]        = "`" . $key . "` = :" . $key ;
                 }
                 $setArr[':room_id'] = $room_id;
+
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `rooms` SET " .
+                $updSt   = $this->dbObj->db->prepare("UPDATE `rooms` SET " .
                     $setList . " WHERE room_id = :room_id");
-                if($updSt) {
+                if ($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
-                if(!$updStExe) {
+                if (!$updStExe) {
                     $this->error = "Update Failed";
-                    return FALSE;
+                    return false;
                 }
-                return TRUE;
+                return true;
             } else {
                 $this->error = "No Data to update";
-                return FALSE;
+                return false;
             }
         } catch (Exception $e) {
             $this->error = "Unable to update record";
-            return FALSE;
+            return false;
         } 
     }
 
     public function getAllRooms()
     {
         $this->error = null;
+
         $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms`");
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute();
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
             return $resSel;
         }
@@ -90,16 +92,19 @@ Class Rooms
     public function getAllRoomsByStatus($status)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE status = :status");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` 
+                    WHERE status = :status");
+
         $setArr[":status"] = $status;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No record matching the status";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }
@@ -109,16 +114,19 @@ Class Rooms
     public function getAllRoomsByType($typeId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE room_type_id = :room_type_id");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` 
+                    WHERE room_type_id = :room_type_id");
+
         $setArr[":room_type_id"] = $typeId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No record matching the type";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }
@@ -128,16 +136,19 @@ Class Rooms
     public function getRoomById($roomId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` WHERE room_id = :room_id");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `rooms` 
+                    WHERE room_id = :room_id");
+
         $setArr[":room_id"] = $roomId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No matching record";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }

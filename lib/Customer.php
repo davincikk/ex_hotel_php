@@ -8,11 +8,11 @@ Class Customer
 
     public function __construct()
     {
-        if(is_null($this->dbObj)) {
+        if (is_null($this->dbObj)) {
             $this->dbObj = new DBConnection();
-            if(is_null($this->dbObj->db)) {
+            if (is_null($this->dbObj->db)) {
                 $this->error = "DB Connection Failed";
-                return FALSE;
+                return false;
             }
         }
     } 
@@ -24,7 +24,7 @@ Class Customer
             $crtSt = $this->dbObj->db->prepare("INSERT INTO `customer`(name, 
                 email, phone, address1, address2) VALUES (:name, :email, 
                 :phone, :address1, :address2)");
-            if($crtSt) {
+            if ($crtSt) {
                 $crtStExe = $crtSt->execute([
                     ':name'     => $valArray['name'],
                     ':email'    => $valArray['email'],
@@ -32,15 +32,15 @@ Class Customer
                     ':address1' => $valArray['address1'],
                     ':address2' => $valArray['address2']
                 ]);
-                if(!$crtStExe) {
+                if (!$crtStExe) {
                     $this->error = "Unable to create record";
-                    return FALSE;
+                    return false;
                 }
             }
-            return TRUE;
+            return true;
         } catch (Exception $e) {
             $this->error = "Unable to create record, not enough records";
-            return FALSE;
+            return false;
         }
     }
 
@@ -48,43 +48,45 @@ Class Customer
     {
         $this->error = null;
         try {
-            if((is_array($updArray) && count($updArray)>0) && $cust_id > 0) {
-                $setArr   = array();
-                $setList  = array();
-                foreach($updArray as $key => $value) {
+            if ((is_array($updArray) && count($updArray)>0) && $cust_id > 0) {
+                $setArr  = array();
+                $setList = array();
+                foreach ($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
-                    $setList[] = "`" . $key . "` = :" . $key ;
+                    $setList[]        = "`" . $key . "` = :" . $key ;
                 }
                 $setArr[':cust_id'] = $cust_id;
+
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `customer` SET " .
+                $updSt   = $this->dbObj->db->prepare("UPDATE `customer` SET " .
                     $setList . " WHERE cust_id = :cust_id");
-                if($updSt) {
+                if ($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
-                if(!$updStExe) {
+                if (!$updStExe) {
                     $this->error = "Update Failed";
-                    return FALSE;
+                    return false;
                 }
-                return TRUE;
+                return true;
             } else {
                 $this->error = "No Data to update";
-                return FALSE;
+                return false;
             }
         } catch (Exception $e) {
             $this->error = "Unable to update record";
-            return FALSE;
+            return false;
         } 
     }
 
     public function getAllCustomer()
     {
         $this->error = null;
+
         $selSt = $this->dbObj->db->prepare("SELECT * FROM `customer`");
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute();
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
             return $resSel;
         }
@@ -93,16 +95,19 @@ Class Customer
     public function getCustomerById($custId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `customer` WHERE cust_id = :cust_id");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `customer` 
+                    WHERE cust_id = :cust_id");
+
         $setArr[":cust_id"] = $custId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No matching record";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }

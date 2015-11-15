@@ -2,18 +2,19 @@
 
 Class DBConnection
 {
-    private $config = array();
-    public  $db     = null;
-    public  $error  = null;
+    private $_config = array();
+    public  $db      = null;
+    public  $error   = null;
 
     public function __construct($configfile = "../config/config.ini")
     {
         try {
-            $this->config = parse_ini_file($configfile, TRUE);
+            $this->_config = parse_ini_file($configfile, true);
             try {
-                $this->db = new PDO('mysql:host=' . $this->config['DB']['host'] 
-                        . ';dbname=' . $this->config['DB']['dbname'], 
-                        $this->config['DB']['user'], $this->config['DB']['password']);
+                $this->db = new PDO('mysql:host=' . $this->_config['DB']['host'] 
+                        . ';dbname=' . $this->_config['DB']['dbname'], 
+                        $this->_config['DB']['user'], 
+                        $this->_config['DB']['password']);
             } catch (PDOException $e) {
                 $this->error = "DB Connection Failed";
                 print "DB Connection Failed"; 

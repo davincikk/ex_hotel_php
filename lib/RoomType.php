@@ -8,11 +8,11 @@ Class RoomType
 
     public function __construct()
     {
-        if(is_null($this->dbObj)) {
+        if (is_null($this->dbObj)) {
             $this->dbObj = new DBConnection();
-            if(is_null($this->dbObj->db)) {
+            if (is_null($this->dbObj->db)) {
                 $this->error = "DB Connection Failed";
-                return FALSE;
+                return false;
             }
         }
     } 
@@ -20,10 +20,11 @@ Class RoomType
     public function createRoomType($valArray)
     {
         try {
-            $crtSt = $this->dbObj->db->prepare("INSERT INTO `room_type`(room_type_name, 
-                capacity, features, status, price) VALUES (:room_type_name, :capacity, 
+            $crtSt = $this->dbObj->db->prepare("INSERT INTO `room_type`
+                (room_type_name, capacity, features, status, price) 
+                VALUES (:room_type_name, :capacity, 
                 :features, :status, :price)");
-            if($crtSt) {
+            if ($crtSt) {
                 $crtStExe = $crtSt->execute([
                     ':room_type_name' => $valArray['room_type_name'],
                     ':capacity'       => $valArray['capacity'],
@@ -31,56 +32,57 @@ Class RoomType
                     ':status'         => $valArray['status'],
                     ':price'          => $valArray['price']
                 ]);
-                if(!$crtStExe) {
-                    return FALSE;
+                if (!$crtStExe) {
+                    return false;
                 }
             }
-            return TRUE;
+            return true;
         } catch (Exception $e) {
             $this->error = "Unable to create record";
-            return FALSE;
+            return false;
         }
     }
 
     public function updateRoomType($updArray, $room_type_id)
     {
-       try {
-            if((is_array($updArray) && count($updArray)>0) && $room_type_id > 0) {
-                $setArr   = array();
-                $setList  = array();
-                foreach($updArray as $key => $value) {
+        try {
+            if ((is_array($updArray) && count($updArray)>0) && $room_type_id > 0) {
+                $setArr  = array();
+                $setList = array();
+                foreach ($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
-                    $setList[] = "`" . $key . "` = :" . $key ;
+                    $setList[]        = "`" . $key . "` = :" . $key ;
                 }
                 $setArr[':room_type_id'] = $room_type_id;
+
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `room_type` SET " .
+                $updSt   = $this->dbObj->db->prepare("UPDATE `room_type` SET " .
                     $setList . " WHERE room_type_id = :room_type_id");
-                if($updSt) {
+                if ($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
-                if(!$updStExe) {
+                if (!$updStExe) {
                     $this->error = "Update Failed";
-                    return FALSE;
+                    return false;
                 }
-                return TRUE;
+                return true;
             } else {
                 $this->error = "No Data to update";
-                return FALSE;
+                return false;
             }
         } catch (Exception $e) {
             $this->error = "Unable to update record";
-            return FALSE;
+            return false;
         } 
     }
 
     public function getAllRoomType()
     {
         $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type`");
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute();
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
             return $resSel;
         }
@@ -88,11 +90,12 @@ Class RoomType
     
     public function getAllActiveRoomType()
     {
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` WHERE status = 'Active'");
-        if($selSt) {
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` 
+                        WHERE status = 'Active'");
+        if ($selSt) {
             $selStExe = $selSt->execute();
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
             return $resSel;
         }
@@ -101,16 +104,18 @@ Class RoomType
 
     public function getRoomTypeById($typeId)
     {
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` WHERE room_type_id = :room_type_id");
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `room_type` 
+                    WHERE room_type_id = :room_type_id");
+
         $setArr[":room_type_id"] = $typeId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No matching record";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }

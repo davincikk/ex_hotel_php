@@ -8,11 +8,11 @@ Class Booking
 
     public function __construct()
     {
-        if(is_null($this->dbObj)) {
+        if (is_null($this->dbObj)) {
             $this->dbObj = new DBConnection();
-            if(is_null($this->dbObj->db)) {
+            if (is_null($this->dbObj->db)) {
                 $this->error = "DB Connection Failed";
-                return FALSE;
+                return false;
             }
         }
     } 
@@ -23,14 +23,14 @@ Class Booking
         try {
             $isAvailable = $this->checkAvailability($valArray['room_id'],
                             $valArray['from_date'], $valArray['to_date']);
-            if(!$isAvailable) {
+            if (!$isAvailable) {
                 $this->error = "Room Not Available";
-                return FALSE;
+                return false;
             }
             $crtSt = $this->dbObj->db->prepare("INSERT INTO `booking`(room_id, 
                 from_date, to_date, cust_id, status) VALUES (:room_id, :from_date, 
                 :to_date, :cust_id, :status)");
-            if($crtSt) {
+            if ($crtSt) {
                 $crtStExe = $crtSt->execute([
                     ':room_id'      => $valArray['room_id'],
                     ':from_date'    => $valArray['from_date'],
@@ -38,15 +38,15 @@ Class Booking
                     ':cust_id'      => $valArray['cust_id'],
                     ':status'       => $valArray['status']
                 ]);
-                if(!$crtStExe) {
+                if (!$crtStExe) {
                     $this->error = "Unable to create record";
-                    return FALSE;
+                    return false;
                 }
             }
-            return TRUE;
+            return true;
         } catch (Exception $e) {
             $this->error = "Unable to create record, not enough records";
-            return FALSE;
+            return false;
         }
     }
 
@@ -54,43 +54,45 @@ Class Booking
     {
         $this->error = null;
         try {
-            if((is_array($updArray) && count($updArray)>0) && $booking_id > 0) {
-                $setArr   = array();
-                $setList  = array();
-                foreach($updArray as $key => $value) {
+            if ((is_array($updArray) && count($updArray)>0) && $booking_id > 0) {
+                $setArr  = array();
+                $setList = array();
+                foreach ($updArray as $key => $value) {
                     $setArr[':'.$key] = $value;
-                    $setList[] = "`" . $key . "` = :" . $key ;
+                    $setList[]        = "`" . $key . "` = :" . $key ;
                 }
                 $setArr[':booking_id'] = $booking_id;
+
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `booking` SET " .
+                $updSt   = $this->dbObj->db->prepare("UPDATE `booking` SET " .
                     $setList . " WHERE booking_id = :booking_id");
-                if($updSt) {
+                if ($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }
-                if(!$updStExe) {
+                if (!$updStExe) {
                     $this->error = "Update Failed";
-                    return FALSE;
+                    return false;
                 }
-                return TRUE;
+                return true;
             } else {
                 $this->error = "No Data to update";
-                return FALSE;
+                return false;
             }
         } catch (Exception $e) {
             $this->error = "Unable to update record";
-            return FALSE;
+            return false;
         } 
     }
 
     public function getAllBookings()
     {
         $this->error = null;
+
         $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking`");
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute();
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
             return $resSel;
         }
@@ -99,16 +101,19 @@ Class Booking
     public function getAllBookingsByStatus($status)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE status = :status");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` 
+                    WHERE status = :status");
+
         $setArr[":status"] = $status;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No record matching the status";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }
@@ -118,16 +123,19 @@ Class Booking
     public function getAllBookingsByCustomer($custId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE cust_id = :cust_id");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` 
+                    WHERE cust_id = :cust_id");
+
         $setArr[":cust_id"] = $custId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No record matching the Customer";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }
@@ -137,16 +145,19 @@ Class Booking
     public function getBookingById($bookingId)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE booking_id = :booking_id");
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` 
+                    WHERE booking_id = :booking_id");
+
         $setArr[":booking_id"] = $bookingId;
-        if($selSt) {
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
+            if (count($resSel) == 0 ) {
                 $this->error = "No matching record";
-                return FALSE;
+                return false;
             } else {
                 return $resSel;
             }
@@ -156,19 +167,23 @@ Class Booking
     public function checkAvailability($roomId, $from, $to)
     {
         $this->error = null;
-        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` WHERE room_id = :room_id and from_date < :to_date and to_date > :from_date");
-        $setArr[":room_id"] = $roomId;
+
+        $selSt = $this->dbObj->db->prepare("SELECT * FROM `booking` 
+                    WHERE room_id = :room_id and from_date < :to_date 
+                    and to_date > :from_date");
+
+        $setArr[":room_id"]   = $roomId;
         $setArr[":from_date"] = $from;
-        $setArr[":to_date"] = $to;
-        if($selSt) {
+        $setArr[":to_date"]   = $to;
+        if ($selSt) {
             $selStExe = $selSt->execute($setArr);
         }
-        if($selStExe) {
+        if ($selStExe) {
             $resSel = $selSt->fetchAll();
-            if(count($resSel) == 0 ) {
-                return TRUE;
+            if (count($resSel) == 0 ) {
+                return true;
             } else {
-                return FALSE;
+                return false;
             }
         }
     }
