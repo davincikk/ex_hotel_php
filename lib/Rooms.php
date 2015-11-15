@@ -1,7 +1,7 @@
 <?php
 require_once "DBConnection.php";
 
-Class RoomType
+Class Rooms
 {
     public $dbObj = null;
     public $error = null;
@@ -17,19 +17,17 @@ Class RoomType
         }
     } 
 
-    public function createRoomType($valArray)
+    public function createRoom($valArray)
     {
         try {
-            $crtSt = $this->dbObj->db->prepare("INSERT INTO `room_type`(room_type_name, 
-                capacity, features, status, price) VALUES (:room_type_name, :capacity, 
-                :features, :status, :price)");
+            $crtSt = $this->dbObj->db->prepare("INSERT INTO `rooms`(room_name, 
+                room_type_id, status) VALUES (:room_name, :room_type_id, 
+                :status)");
             if($crtSt) {
                 $crtStExe = $crtSt->execute([
-                    ':room_type_name' => $valArray['room_type_name'],
-                    ':capacity'       => $valArray['capacity'],
-                    ':features'       => $valArray['features'],
-                    ':status'         => $valArray['status'],
-                    ':price'          => $valArray['price']
+                    ':room_name' => $valArray['room_name'],
+                    ':room_type_id'       => $valArray['room_type_id'],
+                    ':status'         => $valArray['status']
                 ]);
                 if(!$crtStExe) {
                     return FALSE;
@@ -42,10 +40,10 @@ Class RoomType
         }
     }
 
-    public function updateRoomType($updArray, $room_type_id)
+    public function updateRoom($updArray, $room_id)
     {
        try {
-            if((is_array($updArray) && count($updArray)>0) || $room_type_id > 0) {
+            if((is_array($updArray) && count($updArray)>0) || $room_id > 0) {
                 $setArr   = array();
                 $setList  = array();
                 foreach($updArray as $key => $value) {
@@ -56,10 +54,10 @@ Class RoomType
                     $this->error = "Not Enough data to update record";
                     return FALSE;
                 }
-                $setArr[':room_type_id'] = $room_type_id;
+                $setArr[':room_id'] = $room_id;
                 $setList = implode(",", $setList);
-                $updSt = $this->dbObj->db->prepare("UPDATE `room_type` SET " .
-                    $setList . " WHERE room_type_id = :room_type_id");
+                $updSt = $this->dbObj->db->prepare("UPDATE `rooms` SET " .
+                    $setList . " WHERE room_id = :room_id");
                 if($updSt) {
                     $updStExe = $updSt->execute($setArr);
                 }

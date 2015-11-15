@@ -28,17 +28,15 @@ class RoomTypeTest extends PHPUnit_Framework_TestCase
     public function updateRoomType()
     {
         return array(
-            array(array('room_type_id' => 1,
-                        'room_type_name' => 'Class C'), 
+            array('room_type_id' => 1, array('room_type_name' => 'Class C'), 
                         array(TRUE, NULL)),
-            array(array('room_type_id' => 1,
-                        'room_type_name' => 'Class B'), 
+            array('room_type_id' => 1, array('room_type_name' => 'Class B'), 
                         array(FALSE,'Update Failed')),
-            array(array('room_type_id' => 1), 
+            array('room_type_id' => 1, array(), 
                         array(FALSE, 'Not Enough data to update record')),
-            array(array(), array(FALSE, 'No Data to update')),
-            array(array('room_type_id' => 1,
-                        'room_type_nae' => 'Class C'), 
+            array('room_type_id' => '', array(), 
+                        array(FALSE, 'No Data to update')),
+            array('room_type_id' => 1, array('room_type_nae' => 'Class C'), 
                         array(FALSE, 'Update Failed'))
         );
     }
@@ -57,10 +55,10 @@ class RoomTypeTest extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider updateRoomType
      */
-    public function testUpdateRoomType($data, $expected)
+    public function testUpdateRoomType($id, $data, $expected)
     {
         $tempObj = new RoomType();
-        $createStatus = $tempObj->updateRoomType($data);
+        $createStatus = $tempObj->updateRoomType($data, $id);
         $this->assertEquals($createStatus, $expected[0]);
         $this->assertEquals($tempObj->error, $expected[1]);
     }
